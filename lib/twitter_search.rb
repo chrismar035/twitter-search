@@ -7,9 +7,19 @@ require File.join(File.dirname(__FILE__), 'tweets')
 require File.join(File.dirname(__FILE__), 'trends')
 
 module TwitterSearch
-  class SearchOperatorError < ArgumentError
+  class TwitterSearchError < StandardError
   end
-  class SearchServerError < RuntimeError
+  class SearchOperatorError < TwitterSearchError
+  end
+  class SearchServerError < TwitterSearchError
+  end
+  class RateLimited < TwitterSearchError
+    attr_reader :retry_after
+    
+    def initialize(msg, retry_after = nil)
+      super(msg)
+      @retry_after = retry_after
+    end
   end
 
   class Client
@@ -49,6 +59,10 @@ module TwitterSearch
               "Twitter responded with a 404 for your query."
       end
 
+      unless res['retry-after'].blank?
+        raise TwitterSearch::RateLimited.new("You have been rate limited", res['retry-after'].to_i)
+      end
+      
       json        = res.body
       parsed_json = JSON.parse(json)
 
