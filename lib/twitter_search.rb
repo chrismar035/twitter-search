@@ -59,7 +59,7 @@ module TwitterSearch
               "Twitter responded with a 404 for your query."
       end
 
-      unless res['retry-after'].blank?
+      unless res['retry-after'].nil? || res['retry-after'].empty?
         raise TwitterSearch::RateLimited.new("You have been rate limited", res['retry-after'].to_i)
       end
       

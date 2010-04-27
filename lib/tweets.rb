@@ -18,6 +18,11 @@ module TwitterSearch
       @id
     end
 
+    def to_hash
+      hsh = Hash.new
+      VARS.each{ |k| hsh[k] = instance_variable_get "@#{k}"}
+      hsh
+    end
   end
 
   class Tweets < Array
